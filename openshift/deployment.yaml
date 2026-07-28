@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oc-devspaces-pythonapp
+  labels:
+    app: oc-devspaces-pythonapp
+    app.kubernetes.io/name: oc-devspaces-pythonapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oc-devspaces-pythonapp
+  template:
+    metadata:
+      labels:
+        app: oc-devspaces-pythonapp
+        app.kubernetes.io/name: oc-devspaces-pythonapp
+    spec:
+      containers:
+        - name: app
+          image: image-registry.openshift-image-registry.svc:5000/NAMESPACE_NAME/oc-devspaces-pythonapp:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: oc-devspaces-pythonapp
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault

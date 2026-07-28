@@ -1,50 +1,71 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: build-and-deploy
+  name: build-image
 spec:
-  resources:
-  - name: git-repo
-    type: git
-  - name: image
-    type: image
+  description: Clone this repo and build/push an image with buildah from Containerfile.
   params:
-  - name: deployment-name
-    type: string
-    description: name of the deployment to be patched
+    - name: git-url
+      type: string
+      description: Git repository URL to clone
+    - name: git-revision
+      type: string
+      description: Git revision (branch, tag, or commit)
+      default: main
+    - name: IMAGE
+      type: string
+      description: Fully-qualified image to build and push
+    - name: DOCKERFILE
+      type: string
+      description: Path to Containerfile/Dockerfile relative to context
+      default: ./Containerfile
+    - name: TLS_VERIFY
+      type: string
+      description: Verify TLS when pushing the image
+      default: "false"
+  workspaces:
+    - name: shared-workspace
+      description: Shared workspace for source code and build context
   tasks:
-  - name: build-image
-    taskRef:
-      name: buildah
-      kind: ClusterTask
-    resources:
-      inputs:
-      - name: source
-        resource: git-repo
-      outputs:
-      - name: image
-        resource: image
-    params:
-    - name: TLSVERIFY
-      value: "false"
-  - name: apply-manifests
-    taskRef:
-      name: apply-manifests
-    resources:
-      inputs:
-      - name: source
-        resource: git-repo
-    runAfter:
-    - build-image
-  - name: update-deployment
-    taskRef:
-      name: update-deployment
-    resources:
-      inputs:
-      - name: image
-        resource: image
-    params:
-    - name: deployment
-      value: $(params.deployment-name)
-    runAfter:
-    - apply-manifests
+    - name: fetch-repository
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: openshift-pipelines
+      params:
+        - name: URL
+          value: $(params.git-url)
+        - name: REVISION
+          value: $(params.git-revision)
+        - name: DELETE_EXISTING
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+    - name: build-image
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: buildah
+          - name: namespace
+            value: openshift-pipelines
+      runAfter:
+        - fetch-repository
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE)
+        - name: DOCKERFILE
+          value: $(params.DOCKERFILE)
+        - name: TLS_VERIFY
+          value: $(params.TLS_VERIFY)
+      workspaces:
+        - name: source
+          workspace: shared-workspace

@@ -85,3 +85,11 @@ commands:
       component: tools
       group:
         kind: run
+  - id: oc-apply-manifests
+    exec:
+      label: 'Apply OpenShift manifests'
+      commandLine: oc apply -f openshift/
+      workingDir: ${PROJECT_SOURCE}
+      component: tools
+      group:
+        kind: deploy

@@ -1,17 +1,27 @@
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: build-deploy-api-pipelinerun
+  generateName: build-image-run-
 spec:
   pipelineRef:
-    name: build-and-deploy
-  resources:
-  - name: git-repo
-    resourceRef:
-      name: api-repo
-  - name: image
-    resourceRef:
-      name: api-image
+    name: build-image
   params:
-  - name: deployment-name
-    value: vote-api
+    - name: git-url
+      value: https://github.com/sgleser/oc-devspaces-pythonapp.git
+    - name: git-revision
+      value: main
+    - name: IMAGE
+      value: image-registry.openshift-image-registry.svc:5000/NAMESPACE/oc-devspaces-pythonapp:0.0.1
+    - name: DOCKERFILE
+      value: ./Containerfile
+    - name: TLS_VERIFY
+      value: "false"
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
