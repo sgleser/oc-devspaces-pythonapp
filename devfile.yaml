@@ -9,19 +9,23 @@ metadata:
     - Python
     - Pip
     - Flask
+    - UDI
   projectType: Python
   language: Python
   provider: Red Hat
   version: 2.2.0
-# starterProjects:
-#   - name: flask-example
-#     description:
-#       'Flask is a web framework, it’s a Python module that lets you develop web applications easily.
-#       It’s has a small and easy-to-extend core: it’s a microframework that doesn’t include an ORM (Object Relational Manager) or such features.'
-#     git:
-#       remotes:
-#         origin: https://github.com/devfile-samples/python-ex
 components:
+  # UDI first = default Dev Spaces terminal (oc, podman, helm, …)
+  - name: tools
+    container:
+      image: registry.redhat.io/devspaces/udi-rhel9:latest
+      memoryRequest: 1Gi
+      memoryLimit: 3Gi
+      cpuRequest: '200m'
+      cpuLimit: '1'
+      mountSources: true
+      args: ['tail', '-f', '/dev/null']
+  # Python runtime for build / run / debug
   - name: py
     container:
       image: registry.access.redhat.com/ubi9/python-39:1-1780505855
