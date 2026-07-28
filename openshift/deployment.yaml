@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: image-registry.openshift-image-registry.svc:5000/NAMESPACE_NAME/oc-devspaces-pythonapp:latest
+          image: image-registry.openshift-image-registry.svc:5000/NAMESPACE_NAME/oc-devspaces-pythonapp:0.0.1
           imagePullPolicy: Always
           ports:
             - name: http
