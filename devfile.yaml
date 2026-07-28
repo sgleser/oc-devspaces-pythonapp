@@ -27,7 +27,7 @@ components:
       args: ['tail', '-f', '/dev/null']
       endpoints:
         - name: https-container
-          targetPort: 8080
+          targetPort: 8081
           protocol: https
   # Python runtime for build / run / debug
   - name: py
@@ -80,7 +80,7 @@ commands:
   - id: podman-run
     exec:
       label: 'Podman run'
-      commandLine: 'podman rm -f oc-devspaces-pythonapp 2>/dev/null; podman run --rm --name oc-devspaces-pythonapp -p 8080:8080 localhost/oc-devspaces-pythonapp'
+      commandLine: 'podman rm -f oc-devspaces-pythonapp 2>/dev/null; podman run --rm --name oc-devspaces-pythonapp -p 8081:8080 localhost/oc-devspaces-pythonapp'
       workingDir: ${PROJECT_SOURCE}
       component: tools
       group:
