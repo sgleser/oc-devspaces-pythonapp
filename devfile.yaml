@@ -25,6 +25,10 @@ components:
       cpuLimit: '1'
       mountSources: true
       args: ['tail', '-f', '/dev/null']
+      endpoints:
+        - name: https-container
+          targetPort: 8080
+          protocol: https
   # Python runtime for build / run / debug
   - name: py
     container:
@@ -65,3 +69,19 @@ commands:
       component: py
       group:
         kind: debug
+  - id: podman-build
+    exec:
+      label: 'Podman build (Containerfile)'
+      commandLine: podman build -t oc-devspaces-pythonapp -f Containerfile .
+      workingDir: ${PROJECT_SOURCE}
+      component: tools
+      group:
+        kind: build
+  - id: podman-run
+    exec:
+      label: 'Podman run'
+      commandLine: 'podman rm -f oc-devspaces-pythonapp 2>/dev/null; podman run --rm --name oc-devspaces-pythonapp -p 8080:8080 localhost/oc-devspaces-pythonapp'
+      workingDir: ${PROJECT_SOURCE}
+      component: tools
+      group:
+        kind: run
